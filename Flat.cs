@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace cours_project
@@ -42,6 +43,13 @@ namespace cours_project
         public Flat(string _tenantFullName, string _flatAddress){
             tenantFullName = _tenantFullName;
             flatAddress = _flatAddress;
+        }
+
+        public string Info(){
+            string result = "";
+            PropertyInfo[] properties = this.GetType().GetProperties();
+            foreach (var property in properties) result += $"{property.Name}: {property.GetValue(this)}\n";
+            return result;
         }
     }
 }
