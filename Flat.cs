@@ -1,15 +1,17 @@
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.ComponentModel;
 
 namespace cours_project
 {
-    class Flat
+    public class Flat
     {
         private string  tenantFullName;
         private string flatAddress;
         private int peopleCount;
         private double tariffPerPerson;
 
+        [DisplayName("Имя арендатора")]
         public string TenantFullName{
             get{return tenantFullName;}
             set{
@@ -18,6 +20,8 @@ namespace cours_project
                 else tenantFullName = value;
             }
         }
+
+        [DisplayName("Адрес квартиры")]
         public string FlatAddress{
             get{return flatAddress;}
             set{
@@ -25,6 +29,8 @@ namespace cours_project
                 else flatAddress = value;
             }
         }
+
+        [DisplayName("Количество человек")]
         public int PeopleCount{
             get{return peopleCount;}
             set{
@@ -32,23 +38,32 @@ namespace cours_project
                 else peopleCount = value;
             }
         }
+
+        [DisplayName("Тариф за человека")]
         public double TariffPerPerson{
             get{return tariffPerPerson;}
             set{
-                if (value < 1) throw new ArgumentException("Тариф не может быть иеньше 1!");
+                if (value < 1) throw new ArgumentException("Тариф не может быть меньше 1!");
                 else tariffPerPerson = value;
             }
         }
 
-        public Flat(string _tenantFullName, string _flatAddress){
-            tenantFullName = _tenantFullName;
-            flatAddress = _flatAddress;
-        }
-
         public string Info(){
             string result = "";
+
             PropertyInfo[] properties = this.GetType().GetProperties();
-            foreach (var property in properties) result += $"{property.Name}: {property.GetValue(this)}\n";
+
+            foreach (var property in properties)
+            {
+                string displayName;
+
+                var displayNameAttribute = property.GetCustomAttribute<DisplayNameAttribute>();
+
+                if (displayNameAttribute != null) {displayName = displayNameAttribute.DisplayName;}
+                else {displayName = property.Name;}
+
+                result += $"{displayName}: {property.GetValue(this)}\n";
+            }
             return result;
         }
     }
