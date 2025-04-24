@@ -18,27 +18,30 @@ public class MenuManager
             switch (key.Key)
             {
                 case ConsoleKey.D1:
-                    flatManager.Create();
+                    flatManager.AddFlat();
                     break;
                 case ConsoleKey.D2:
-                    flatManager.Update();
+                    flatManager.UpdateFlat();
                     break;
                 case ConsoleKey.D3:
-                    flatManager.Read();
+                    flatManager.ShowAllFlats();
                     break;
                 case ConsoleKey.D4:
-                    flatManager.Delete();
+                    flatManager.DeleteFlat();
                     break;
                 case ConsoleKey.D5:
-                    flatManager.ShowConsoleChart();
+                    flatManager.ShowChart();
                     break;
                 case ConsoleKey.D6:
-                    flatManager.SearchFlats();
+                    // flatManager.SearchFlats();
+                    break;
+                case ConsoleKey.D7:
+                    
                     break;
                 case ConsoleKey.Escape:
                     return;
                 default:
-                    Console.WriteLine("Неверная клавиша. Повторите ввод.");
+                    ConsoleMessages.WriteErrorMessage("Неверная клавиша. Повторите ввод.");
                     break;
             }
 

@@ -1,239 +1,446 @@
-namespace cours_project;
+// using System.Text.Json;
+// using System.IO;
+// using System.Text.RegularExpressions;
+// using System.ComponentModel;
+// using System.Reflection;
 
-public class FlatManager
-{
-    private readonly FlatStorage _storage = new();
-    private readonly FlatSorter _sorter = new();
-    private readonly FlatChart _chart = new();
+// namespace cours_project;
 
-    public void Create()
-    {
-        Flat flat = new Flat();
-        InputData(flat);
-        Console.Write("\nДля отмены операции введите '0'. ");
+// public class FlatManager
+// {
+//     private const string filePath = @"..\..\..\file.json";
 
-        var flats = _storage.ReadAll();
+//     public FlatManager() 
+//     {
+//         EnsureFileExists();
+//     }
 
-        if (flats.Any(existing => IsDuplicate(existing, flat)))
-        {
-            Console.WriteLine("Запись уже существует.");
-            return;
-        }
+//     private void EnsureFileExists() 
+//     {
+//         if (!File.Exists(filePath)) File.Create(filePath).Close();
+//     }
 
-        string confirmation = Console.ReadLine();
-        if (confirmation == "0")
-        {
-            Console.WriteLine("Добавление записи отменено.");
-            return;
-        }
+//     public void Create()
+//     {
+//         Flat flat = new Flat();
+//         InputData(flat);
+//         Console.Write("\nДля отмены операции введите '0'. ");
 
-        flats.Add(flat);
-        _storage.SaveAll(flats);
-        Console.WriteLine("Запись успешно добавлена.");
-    }
+//         var flats = ReadAllFlats();
 
-    public bool Read()
-    {
-        var flats = _storage.ReadAll();
+//         foreach (var existingFlat in flats)
+//         {
+//             if (IsDuplicate(existingFlat, flat))
+//             {
+//                 Console.WriteLine("Запись уже существует.");
+//                 return;
+//             }
+//         }
 
-        if (flats.Any())
-        {
-            Console.WriteLine("Список квартир:");
-            for (int i = 0; i < flats.Count; i++) Console.WriteLine($"{i + 1}. {flats[i].Info()}");
-            return true;
-        }
+//         string confirmation = Console.ReadLine();
+//         if (confirmation == "0")
+//         {
+//             Console.WriteLine("Добавление записи отменено.");
+//             return;
+//         }
+//         else
+//         {
+//             try
+//             {
+//                 string jsonFlat = JsonSerializer.Serialize(flat, JsonSettings.LinesOptions) + Environment.NewLine;
+//                 File.AppendAllText(filePath, jsonFlat);
+//                 Console.WriteLine("Запись успешно добавлена.");
+//             }
+//             catch (IOException exception) {Console.WriteLine($"Ошибка при записи в файл: {exception.Message}");}
+//         }
+//     }
 
-        Console.WriteLine("Данные отсутствуют.");
-        return false;
-    }
+//     public bool Read()
+//     {
+//         var flats = ReadAllFlats();
+//         if (flats.Any())
+//         { 
+//             Console.WriteLine("Список квартир:");
+//             for (int i = 0; i < flats.Count; i++) Console.WriteLine($"{i + 1}. {flats[i].Info()}");
+//             return true;
+//         }
+//         else 
+//         {
+//             Console.WriteLine("Данные отсутствуют.");
+//             return false;
+//         }
+        
+//     }
 
-    public void Update()
-    {
-        var flats = _storage.ReadAll();
+//     public void Update()
+//     {
+//         var flats = ReadAllFlats();
 
-        if (!Read()) return;
+//         if (!Read()) return;
 
-        Console.Write("\nДля отмены операции введите '0'. ");
-        Console.Write("\nВведите номер записи для редактирования: ");
+//         int index;
+//         while (true)
+//         {
+//             Console.Write("\nДля отмены операции введите '0'. ");
+//             Console.Write("\nВведите номер записи для редактирования: ");
+//             string input = Console.ReadLine();
 
-        if (!TryGetIndex(flats.Count, out int index)) return;
+//             if (input == "0")
+//             {
+//                 Console.WriteLine("Изменение отменено.");
+//                 return;
+//             }
 
-        Flat updatedFlat = new Flat();
-        InputData(updatedFlat);
-        flats[index] = updatedFlat;
+//             bool isNumber = int.TryParse(input, out index);
 
-        _storage.SaveAll(flats);
-        Console.WriteLine("Запись успешно обновлена.");
-    }
+//             if (!isNumber) Console.WriteLine("Ошибка: введённое значение не является числом.");
+//             else
+//             {
+//                 if (index >= 1 && index <= flats.Count) {index--; break;}
+//                 else Console.WriteLine("Ошибка: номер должен быть в диапазоне от 1 до " + flats.Count);
+//             }
 
-    public void Delete()
-    {
-        var flats = _storage.ReadAll();
+//         }
 
-        if (!Read()) return;
+//         Flat updatedFlat = new Flat();
+//         InputData(updatedFlat);
+//         flats[index] = updatedFlat;
 
-        Console.Write("\nДля отмены операции введите '0'. ");
-        Console.Write("\nВведите номер записи для удаления: ");
+//         SaveAllFlats(flats);
+//         Console.WriteLine("Запись успешно обновлена.");
+//     }
 
-        if (!TryGetIndex(flats.Count, out int index)) return;
 
-        flats.RemoveAt(index);
-        _storage.SaveAll(flats);
-        Console.WriteLine("Запись успешно удалена.");
-    }
+//     public void Delete()
+//     {
+//         var flats = ReadAllFlats();
 
-    public void ShowConsoleChart()
-    {
-        var flats = _storage.ReadAll();
-        _chart.Display(flats);
-    }
+//         if (!Read()) return;
 
-    public void SortByParameter()
-    {
-        var flats = _storage.ReadAll();
+//         int index;
+//         while (true)
+//         {
+//             Console.Write("\nДля отмены операции введите '0'. ");
+//             Console.Write("\nВведите номер записи для удаления: ");
+//             string input = Console.ReadLine();
 
-        if (!flats.Any())
-        {
-            Console.WriteLine("Нет данных для сортировки.");
-            return;
-        }
+//             if (input == "0")
+//             {
+//                 Console.WriteLine("Удаление отменено.");
+//                 return;
+//             }
 
-        Console.WriteLine("Выберите параметр для сортировки:");
-        Console.WriteLine("1. ФИО арендатора");
-        Console.WriteLine("2. Адрес квартиры");
-        Console.WriteLine("3. Количество жильцов");
-        Console.WriteLine("4. Тариф за человека");
-        Console.WriteLine("0. Отмена");
+//             bool isNumber = int.TryParse(input, out index);
 
-        string? choice = Console.ReadLine();
+//             if (!isNumber) Console.WriteLine("Ошибка: введённое значение не является числом.");
+//             else
+//             {
+//                 if (index >= 1 && index <= flats.Count) { index--; break; }
+//                 else Console.WriteLine("Ошибка: номер должен быть в диапазоне от 1 до " + flats.Count);
+//             }
+//         }
+//         flats.RemoveAt(index);
+//         SaveAllFlats(flats);
+//         Console.WriteLine("Запись успешно удалена.");
+//     }
 
-        if (choice == "0")
-        {
-            Console.WriteLine("Сортировка отменена.");
-            return;
-        }
+//     public void ShowConsoleChart()
+//     {
+//         var flats = ReadAllFlats();
 
-        bool sorted = _sorter.Sort(flats, choice);
-        if (sorted)
-        {
-            _storage.SaveAll(flats);
-            Console.WriteLine("Сортировка выполнена и сохранена.");
-        }
-        else Console.WriteLine("Некорректный выбор.");
-    }
+//         if (!flats.Any())
+//         {
+//             Console.WriteLine("Нет данных для построения графика.");
+//             return;
+//         }
 
-    public void SearchFlats()
-    {
-        Console.WriteLine("Выберите параметр для поиска:");
-        Console.WriteLine("1. ФИО арендатора");
-        Console.WriteLine("2. Адрес квартиры");
-        Console.WriteLine("3. Количество жильцов");
-        Console.WriteLine("0. Отмена");
+//         Console.WriteLine("\nГрафик оплаты по числу проживающих:\n");
 
-        string? choice = Console.ReadLine();
-        var flats = _storage.ReadAll();
+//         double max = 0;
+//         foreach (var flat in flats)
+//         {
+//             double totalPayment = flat.PeopleCount * flat.TariffPerPerson;
+//             if (totalPayment > max) max = totalPayment;
+//         }
 
-        switch (choice)
-        {
-            case "1":
-                Console.WriteLine("Введите ФИО арендатора:");
-                string name = Console.ReadLine()?.ToLower() ?? "";
-                PrintSearchResult(flats.Where(f => f.TenantFullName.ToLower().Contains(name)).ToList());
-                break;
+        
+//         ConsoleColor[] colors = Enum.GetValues<ConsoleColor>();
+//         int colorIndex = 0;
 
-            case "2":
-                Console.WriteLine("Введите адрес квартиры:");
-                string address = Console.ReadLine()?.ToLower() ?? "";
-                PrintSearchResult(flats.Where(f => f.FlatAddress.ToLower().Contains(address)).ToList());
-                break;
+//         foreach (var flat in flats)
+//         {
+//             double totalPayment = flat.PeopleCount * flat.TariffPerPerson;
+//             int chartBarLength = (int)(totalPayment / max * 100);
 
-            case "3":
-                Console.WriteLine("Введите количество жильцов:");
-                if (int.TryParse(Console.ReadLine(), out int peopleCount))
-                    PrintSearchResult(flats.Where(f => f.PeopleCount == peopleCount).ToList());
-                else Console.WriteLine("Ошибка: введённое значение не является числом.");
-                break;
+//             Console.ForegroundColor = colors[colorIndex % colors.Length];
+//             string chartBar = new string('*', chartBarLength);
 
-            case "0":
-                Console.WriteLine("Поиск отменён.");
-                break;
+//             Console.WriteLine($"{flat.TenantFullName,-20} | {chartBar} {totalPayment:F2}");
 
-            default:
-                Console.WriteLine("Некорректный выбор. Попробуйте снова.");
-                break;
-        }
-    }
+//             Console.ResetColor();
+//             colorIndex++;
+//         }
 
-    // --- Вспомогательные методы --- //
+//         Console.WriteLine();
+//     }
 
-    private static void InputData(Flat flat)
-    {
-        while (true)
-        {
-            Console.WriteLine("Введите ФИО арендатора через пробел:");
-            try { flat.TenantFullName = Console.ReadLine(); break; }
-            catch (ArgumentException e) { Console.WriteLine(e.Message); }
-        }
 
-        while (true)
-        {
-            Console.WriteLine("Введите адрес квартиры:");
-            try { flat.FlatAddress = Console.ReadLine(); break; }
-            catch (ArgumentException e) { Console.WriteLine(e.Message); }
-        }
+//     public void SearchFlats()
+//     {
+//         Console.WriteLine("Выберите параметр для поиска:");
+//         Console.WriteLine("1. ФИО арендатора");
+//         Console.WriteLine("2. Адрес квартиры");
+//         Console.WriteLine("3. Количество жильцов");
+//         Console.WriteLine("0. Отмена");
 
-        while (true)
-        {
-            Console.WriteLine("Введите количество жильцов:");
-            try { flat.PeopleCount = Convert.ToInt32(Console.ReadLine()); break; }
-            catch (Exception e) { Console.WriteLine(e.Message); }
-        }
+//         string choice = Console.ReadLine();
 
-        while (true)
-        {
-            Console.WriteLine("Введите тариф за человека:");
-            try { flat.TariffPerPerson = Convert.ToDouble(Console.ReadLine()); break; }
-            catch (Exception e) { Console.WriteLine(e.Message); }
-        }
-    }
+//         switch (choice)
+//         {
+//             case "1":
+//                 Console.WriteLine("Введите ФИО арендатора:");
 
-    private static bool TryGetIndex(int count, out int index)
-    {
-        string? input = Console.ReadLine();
-        if (input == "0")
-        {
-            Console.WriteLine("Операция отменена.");
-            index = -1;
-            return false;
-        }
+//                 string tenantName = Console.ReadLine();
+//                 if (tenantName != null) tenantName = tenantName.ToLower();
 
-        bool isNumber = int.TryParse(input, out index);
+//                 if (!string.IsNullOrEmpty(tenantName))
+//                 {
+//                     var flats = ReadAllFlats();
+//                     var filteredFlats = flats.Where(flat => flat.TenantFullName.ToLower().Contains(tenantName)).ToList();
 
-        if (!isNumber || index < 1 || index > count)
-        {
-            Console.WriteLine($"Ошибка: введите число от 1 до {count}.");
-            return TryGetIndex(count, out index);
-        }
+//                     if (filteredFlats.Any()) foreach (var flat in filteredFlats) Console.WriteLine(flat.Info());
+//                     else Console.WriteLine("По вашему запросу ничего не найдено.");
+//                 }
+//                 else Console.WriteLine("Ошибка: ФИО не может быть пустым.");
+//                 break;
 
-        index--; // коррекция индекса
-        return true;
-    }
+//             case "2":
+//                 Console.WriteLine("Введите адрес квартиры:");
 
-    private static void PrintSearchResult(List<Flat> results)
-    {
-        if (results.Any())
-        {
-            Console.WriteLine("\nНайденные квартиры:");
-            foreach (var flat in results) Console.WriteLine(flat.Info());
-        }
-        else Console.WriteLine("По вашему запросу ничего не найдено.");
-    }
+//                 string address = Console.ReadLine();
+//                 if (address != null) address = address.ToLower();
 
-    private static bool IsDuplicate(Flat a, Flat b)
-    {
-        return a.TenantFullName == b.TenantFullName &&
-               a.FlatAddress == b.FlatAddress &&
-               a.PeopleCount == b.PeopleCount &&
-               a.TariffPerPerson == b.TariffPerPerson;
-    }
-}
+//                 if (!string.IsNullOrEmpty(address))
+//                 {
+//                     var flats = ReadAllFlats();
+//                     var filteredFlats = flats.Where(flat => flat.FlatAddress.ToLower().Contains(address)).ToList();
+
+//                     if (filteredFlats.Any()) foreach (var flat in filteredFlats) Console.WriteLine(flat.Info());
+//                     else Console.WriteLine("По вашему запросу ничего не найдено.");
+//                 }
+//                 else Console.WriteLine("Ошибка: адрес не может быть пустым.");
+//                 break;
+
+//             case "3":
+//                 Console.WriteLine("Введите количество жильцов:");
+//                 string? input = Console.ReadLine();
+//                 if (int.TryParse(input, out int peopleCount))
+//                 {
+//                     var flats = ReadAllFlats();
+//                     var filteredFlats = flats.Where(flat => flat.PeopleCount == peopleCount).ToList();
+
+//                     if (filteredFlats.Any())
+//                     {
+//                         Console.WriteLine("\nНайденные квартиры:");
+//                         foreach (var flat in filteredFlats)
+//                         {
+//                             Console.WriteLine(flat.Info());
+//                         }
+//                     }
+//                     else Console.WriteLine("По вашему запросу ничего не найдено.");
+//                 }
+//                 else Console.WriteLine("Ошибка: введённое значение не является числом.");
+//                 break;
+
+//             case "0":
+//                 Console.WriteLine("Поиск отменён.");
+//                 break;
+
+//             default:
+//                 Console.WriteLine("Некорректный выбор. Попробуйте снова.");
+//                 break;
+//         }
+//     }
+//     private static void InputData(Flat flat)
+//     {
+//         while (true)
+//         {
+//             Console.WriteLine("Введите ФИО арендатора через пробел: ");
+//             try { flat.TenantFullName = Console.ReadLine(); break; }
+//             catch (ArgumentException exception) { Console.WriteLine(exception.Message); }
+//         }
+//         while (true)
+//         {
+//             Console.WriteLine("Введите адрес квартиры: ");
+//             try { flat.FlatAddress = Console.ReadLine(); break; }
+//             catch (ArgumentException exception) { Console.WriteLine(exception.Message); }
+//         }
+//         while (true)
+//         {
+//             Console.WriteLine("Введите количество жильцов: ");
+//             try { flat.PeopleCount = Convert.ToInt32(Console.ReadLine()); break; }
+//             catch (ArgumentException exception) { Console.WriteLine(exception.Message); }
+//         }
+//         while (true)
+//         {
+//             Console.WriteLine("Введите тариф за человека: ");
+//             try { flat.TariffPerPerson = Convert.ToDouble(Console.ReadLine()); break; }
+//             catch (ArgumentException exception) { Console.WriteLine(exception.Message); }
+//         }
+//     }
+
+//     private List<Flat> ReadAllFlats()
+//     {
+//         List<Flat> flats = new();
+//         var lines = File.ReadAllLines(filePath);
+
+//         foreach (var line in lines)
+//         {
+//             try
+//             {
+//                 var flat = JsonSerializer.Deserialize<Flat>(line);
+//                 if (flat != null) flats.Add(flat);
+//             }
+//             catch (Exception exception) { Console.WriteLine($"Ошибка при чтении строки: {exception.Message}"); }
+//         }
+
+//         return flats;
+//     }
+//     public void SortByParameter()
+//     {
+//         List<Flat> flats = ReadAllFlats();
+
+//         if (flats.Count == 0)
+//         {
+//             Console.WriteLine("Нет данных для сортировки.");
+//             return;
+//         }
+
+//         Console.WriteLine("Выберите параметр для сортировки:");
+//         Console.WriteLine("1. ФИО арендатора");
+//         Console.WriteLine("2. Адрес квартиры");
+//         Console.WriteLine("3. Количество жильцов");
+//         Console.WriteLine("4. Тариф за человека");
+//         Console.WriteLine("0. Отмена");
+
+//         string? choice = Console.ReadLine();
+
+//         if (choice == "0")
+//         {
+//             Console.WriteLine("Сортировка отменена.");
+//             return;
+//         }
+
+//         switch (choice)
+//         {
+//             case "1":
+//                 InsertionSortByFullName(flats);
+//                 break;
+//             case "2":
+//                 InsertionSortByAddress(flats);
+//                 break;
+//             case "3":
+//                 InsertionSortByPeopleCount(flats);
+//                 break;
+//             case "4":
+//                 InsertionSortByTariff(flats);
+//                 break;
+//             default:
+//                 Console.WriteLine("Некорректный выбор.");
+//                 return;
+//         }
+
+//         SaveAllFlats(flats);
+//         Console.WriteLine("Сортировка выполнена и сохранена.");
+//     }
+
+//     private void InsertionSortByFullName(List<Flat> flats)
+//     {
+//         for (int i = 1; i < flats.Count; i++)
+//         {
+//             Flat current = flats[i];
+//             int j = i - 1;
+
+//             // Сравниваем строки ФИО по алфавиту
+//             while (j >= 0 && string.Compare(flats[j].TenantFullName, current.TenantFullName) > 0)
+//             {
+//                 flats[j + 1] = flats[j];
+//                 j--;
+//             }
+//             flats[j + 1] = current;
+//         }
+//     }
+
+//     private void InsertionSortByAddress(List<Flat> flats)
+//     {
+//         for (int i = 1; i < flats.Count; i++)
+//         {
+//             Flat current = flats[i];
+//             int j = i - 1;
+
+//             while (j >= 0 && string.Compare(flats[j].FlatAddress, current.FlatAddress) > 0)
+//             {
+//                 flats[j + 1] = flats[j];
+//                 j--;
+//             }
+//             flats[j + 1] = current;
+//         }
+//     }
+
+//     private void InsertionSortByPeopleCount(List<Flat> flats)
+//     {
+//         for (int i = 1; i < flats.Count; i++)
+//         {
+//             Flat current = flats[i];
+//             int j = i - 1;
+
+//             while (j >= 0 && flats[j].PeopleCount > current.PeopleCount)
+//             {
+//                 flats[j + 1] = flats[j];
+//                 j--;
+//             }
+//             flats[j + 1] = current;
+//         }
+//     }
+
+//     private void InsertionSortByTariff(List<Flat> flats)
+//     {
+//         for (int i = 1; i < flats.Count; i++)
+//         {
+//             Flat current = flats[i];
+//             int j = i - 1;
+
+//             while (j >= 0 && flats[j].TariffPerPerson > current.TariffPerPerson)
+//             {
+//                 flats[j + 1] = flats[j];
+//                 j--;
+//             }
+//             flats[j + 1] = current;
+//         }
+//     }
+
+
+
+//     private void SaveAllFlats(List<Flat> flats)
+//     {
+//         try
+//         {
+//             List<string> serializedFlats = new List<string>();
+//             foreach (Flat flat in flats)
+//             {
+//                 string json = JsonSerializer.Serialize(flat, JsonSettings.LinesOptions);
+//                 serializedFlats.Add(json);
+//             }
+//             File.WriteAllLines(filePath, serializedFlats);
+//         }
+//         catch (IOException exception)
+//         {
+//             Console.WriteLine($"Ошибка при записи в файл: {exception.Message}");
+//         }
+//     }
+
+//     private bool IsDuplicate(Flat a, Flat b)
+//     {   
+//         return a.TenantFullName == b.TenantFullName && a.FlatAddress == b.FlatAddress && a.PeopleCount == b.PeopleCount && a.TariffPerPerson == b.TariffPerPerson;
+//     }
+// }
