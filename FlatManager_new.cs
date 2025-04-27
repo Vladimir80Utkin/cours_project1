@@ -27,6 +27,7 @@ public class FlatManager
        Console.WriteLine("Список квартир:");
         for (int i = 0; i < cachedFlats.Length; i++) Console.WriteLine($"{i + 1}. {cachedFlats[i].Info()}");
     }
+
     public void ShowChart()
     {
         FlatChartService.ShowChart(cachedFlats);
@@ -50,13 +51,12 @@ public class FlatManager
 
         ConsoleMessages.WriteSuccessMessage("Данные успешно добавлены.");
     }
-
     
     public void UpdateFlat()
     {
         if (cachedFlats.Length < 1) {ConsoleMessages.WriteErrorMessage("Нет данных для обновления."); return;}
         ShowAllFlats();
-        int index = InputService.FlatIndex(cachedFlats.Length);
+        int index = InputService.InputIndex(cachedFlats.Length);
 
         Flat flat = new Flat();
         InputService.InputFlat(flat);
@@ -67,13 +67,12 @@ public class FlatManager
         ConsoleMessages.WriteSuccessMessage("Данные успешно обновлены.");
     }
 
-
     public void DeleteFlat()
     {
         if (cachedFlats.Length < 1) {ConsoleMessages.WriteErrorMessage("Нет данных для удаления."); return;}
         
         ShowAllFlats();
-        int index = InputService.FlatIndex(cachedFlats.Length);
+        int index = InputService.InputIndex(cachedFlats.Length);
 
         Flat[] newFlats = new Flat[cachedFlats.Length - 1];
 
@@ -89,5 +88,50 @@ public class FlatManager
 
         ConsoleMessages.WriteSuccessMessage("Данные успешно удалены.");
     }
-  
+
+    public void SearchFlats()
+    {
+        Console.Clear();
+        if (cachedFlats.Length < 1)
+        {
+            ConsoleMessages.WriteErrorMessage("Нет данных для поиска.");
+            return;
+        }
+
+        Console.WriteLine("Введите номер параметра по которому хотите выполнить поиск:");
+        Console.WriteLine(cachedFlats[0].GetPropertiesNames());
+
+        int index = InputService.InputIndex(cachedFlats[0].GetPropertiesCount());
+        PropertyInfo[] properties = Flat.GetProperties();
+        PropertyInfo selectedProperty = properties[index];
+
+        Console.WriteLine($"Введите значение для поиска:");
+        string searchValue = InputService.InputString();
+
+        var matchedFlats = cachedFlats.Where(flat =>
+        {
+            var propertyValue = selectedProperty.GetValue(flat)?.ToString();
+            return propertyValue != null && propertyValue.Contains(searchValue, StringComparison.OrdinalIgnoreCase);
+        }).ToArray();
+
+        if (matchedFlats.Any())
+        {
+            ConsoleMessages.WriteSuccessMessage("Найденные квартиры:");
+            foreach (var flat in matchedFlats) Console.WriteLine(flat.Info());
+        }
+        else ConsoleMessages.WriteErrorMessage("По заданному параметру ничего не найдено.");
+    }
+
+    public void SotrFlats()
+    {
+        if (cachedFlats.Length < 2) {ConsoleMessages.WriteErrorMessage("Нет данных для сортировки."); return;}
+
+        Console.WriteLine("Введите номер параметра по которому хотите выполнить сортировку:");
+        Console.WriteLine(cachedFlats[0].GetPropertiesNames());
+
+        int index = InputService.InputIndex(cachedFlats[0].GetPropertiesCount());
+        Sorter.InsertionSort(cachedFlats,index);
+
+        _storageService.SaveAllFlats(cachedFlats);
+    }
 }

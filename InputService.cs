@@ -29,16 +29,26 @@ public class InputService
         }
     }
 
-     public static int FlatIndex(int maxIndex)
+    public static int InputIndex(int maxIndex)
+    {
+        while (true)
         {
-            while (true)
-            {
-                Console.WriteLine($"Введите индекс квартиры (от 1 до {maxIndex}): ");
-                string input = Console.ReadLine();
-                
-                if (int.TryParse(input, out int index) && index >= 1 && index <= maxIndex) return index - 1;
-                else ConsoleMessages.WriteErrorMessage("Некорректный индекс. Повторите ввод.");
-                
-            }
+            Console.WriteLine($"Введите индекс (от 1 до {maxIndex}): ");
+            string input = Console.ReadLine();
+            
+            if (int.TryParse(input, out int index) && index >= 1 && index <= maxIndex) return index - 1;
+            else ConsoleMessages.WriteErrorMessage("Некорректный индекс. Повторите ввод.");
         }
+    }
+
+    public static string InputString()
+    {
+        while (true)
+        {
+            string input = Console.ReadLine();
+
+            if (!string.IsNullOrWhiteSpace(input)) return input;
+            else ConsoleMessages.WriteErrorMessage("Ввод не может быть пустым. Повторите ввод.");
+        }
+    }
 }

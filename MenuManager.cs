@@ -33,10 +33,10 @@ public class MenuManager
                     flatManager.ShowChart();
                     break;
                 case ConsoleKey.D6:
-                    // flatManager.SearchFlats();
+                    flatManager.SearchFlats();
                     break;
                 case ConsoleKey.D7:
-                    
+                    flatManager.SotrFlats();
                     break;
                 case ConsoleKey.Escape:
                     return;

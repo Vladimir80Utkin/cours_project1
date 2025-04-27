@@ -66,5 +66,35 @@ namespace cours_project
             }
             return result;
         }
+
+        public string GetPropertiesNames(){
+
+            string result = "";
+
+            PropertyInfo[] properties = this.GetType().GetProperties();
+
+            for (int i = 0; i < properties.Length; i++)
+            {
+                string displayName;   
+                var displayNameAttribute = properties[i].GetCustomAttribute<DisplayNameAttribute>();
+
+                if (displayNameAttribute != null) {displayName = displayNameAttribute.DisplayName;}
+                else {displayName = properties[i].Name;}
+
+                result += $"{i+1}: {displayName}\n";
+            }
+            return result;
+        }
+
+        public int GetPropertiesCount()
+        {
+            PropertyInfo[] properties = this.GetType().GetProperties();
+            return properties.Length;
+        }
+
+        public static PropertyInfo[] GetProperties()
+        {
+            return typeof(Flat).GetProperties();
+        }
     }
 }
