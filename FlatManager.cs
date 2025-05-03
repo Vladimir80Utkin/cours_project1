@@ -1,7 +1,3 @@
-using System.Text.Json;
-using System.IO;
-using System.Text.RegularExpressions;
-using System.ComponentModel;
 using System.Reflection;
 
 namespace cours_project;
