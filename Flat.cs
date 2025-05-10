@@ -11,7 +11,7 @@ namespace cours_project
         private int peopleCount;
         private double tariffPerPerson;
 
-        [DisplayName("Имя арендатора")]
+        [DisplayName("ФИО арендатора")]
         public string TenantFullName{
             get{return tenantFullName;}
             set{

@@ -29,7 +29,12 @@ public class FlatStorageService
 
     public void SaveAllFlats(Flat[] flats)
     {
-        var jsonLines = flats.Select(f => JsonSerializer.Serialize(f, JsonSettings.LinesOptions)).ToList();
+        var jsonLines = new List<string>();
+        foreach (var flat in flats)
+        {
+            string jsonLine = JsonSerializer.Serialize(flat, JsonSettings.LinesOptions);
+            jsonLines.Add(jsonLine);
+        }
         File.WriteAllLines(_filePath, jsonLines);
     }
 
